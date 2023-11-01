@@ -1,0 +1,30 @@
+server:
+  host: localhost
+  port: 8081
+  name: account_authentication_svc
+
+database:
+  #  host: db
+  host: localhost
+  port: 5432
+  username: postgres
+  password: postgres
+  dbname: account_authentication_db
+  schemaname: public
+  max-idle-connections: 20 # default is 20 if empty
+  max-open-connections: 100 # default is 100 if empty
+  connection-max-lifetime: 1200 # in seconds, default is 1200 seconds if empty
+  connection-max-idletime: 1 # in seconds, default is 1 second if empty
+
+security:
+  access-token-duration: 30
+  refresh-token-duration: 10080
+  security-token: paseto # or: jwt
+  paseto-token-symmetric-key: 12345678912345678912345678912345
+  auth-skip: true
+
+password:
+  pepper: secret_key
+  salt-length: 40
+
+

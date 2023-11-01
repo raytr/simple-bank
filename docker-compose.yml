@@ -1,0 +1,38 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: account_authentication_db
+      PGDATA: /data/postgres
+    volumes:
+      - db:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - account-authentication-network
+    restart: unless-stopped
+
+  simple-bank:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_HOST=db
+    networks:
+      - account-authentication-network
+    depends_on:
+      - db
+
+networks:
+  account-authentication-network:
+    driver: bridge
+
+volumes:
+  db:
+    driver: local
