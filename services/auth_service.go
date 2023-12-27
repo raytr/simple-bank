@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"gibhub.com/raytr/simple-bank/helper/b_log"
 	"time"
 
 	"gibhub.com/raytr/simple-bank/config"
@@ -12,7 +13,6 @@ import (
 	"gibhub.com/raytr/simple-bank/models/entity"
 	"gibhub.com/raytr/simple-bank/models/response"
 	"gibhub.com/raytr/simple-bank/repository"
-	"github.com/go-kit/kit/log"
 )
 
 type AuthService interface {
@@ -26,7 +26,7 @@ type authServiceImpl struct {
 	SessionRepo    repository.SessionRepo
 	SecurityConfig config.SecurityConfig
 	TokenMaker     tokenHelper.Maker
-	logger         log.Logger
+	logger         b_log.Logger
 }
 
 func NewAuthService(
@@ -35,7 +35,7 @@ func NewAuthService(
 	sessionRepo repository.SessionRepo,
 	secCfg config.SecurityConfig,
 	tokenMaker tokenHelper.Maker,
-	logger log.Logger,
+	logger b_log.Logger,
 ) AuthService {
 	return &authServiceImpl{baseRepo, userRepo, sessionRepo, secCfg, tokenMaker, logger}
 }
@@ -43,37 +43,37 @@ func NewAuthService(
 func (s *authServiceImpl) RenewAccessToken(ctx context.Context, refreshToken string) (*response.LoginResponse, error) {
 	refreshTokenPayload, err := s.TokenMaker.VerifyToken(refreshToken)
 	if err != nil {
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return nil, err
 	}
 
 	session, err := s.SessionRepo.FindById(ctx, refreshTokenPayload.ID)
 	if err != nil {
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return nil, err
 	}
 
 	if session.IsBlocked {
 		err = errors.New("blocked session")
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return nil, err
 	}
 
 	if session.RefreshToken != refreshToken {
 		err = errors.New("mismatched session token")
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return nil, err
 	}
 
 	if session.UserID != refreshTokenPayload.UserID {
 		err = errors.New("incorrect session user")
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return nil, err
 	}
 
 	if time.Now().After(session.ExpiresAt) {
 		err = errors.New("expired session")
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return nil, err
 	}
 
@@ -98,7 +98,7 @@ func (s *authServiceImpl) RenewAccessToken(ctx context.Context, refreshToken str
 func (s *authServiceImpl) Login(ctx context.Context, username, password string) (*response.LoginResponse, error) {
 	user, err := s.UserRepository.FindOneByUsername(ctx, username)
 	if err != nil {
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return nil, errors.New("wrong username or password")
 	}
 

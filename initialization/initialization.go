@@ -1,6 +1,7 @@
 package initialization
 
 import (
+	"gibhub.com/raytr/simple-bank/helper/b_log"
 	"net/http"
 
 	"gibhub.com/raytr/simple-bank/config"
@@ -9,7 +10,6 @@ import (
 	"gibhub.com/raytr/simple-bank/repository"
 	"gibhub.com/raytr/simple-bank/services"
 	"gibhub.com/raytr/simple-bank/transport"
-	"github.com/go-kit/kit/log"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +18,7 @@ const (
 	TokenTypePesato = "pesato"
 )
 
-func InitRouting(db *gorm.DB, cfg *config.Config, logger log.Logger) *http.ServeMux {
+func InitRouting(db *gorm.DB, cfg *config.Config, logger b_log.Logger) *http.ServeMux {
 	var tokenMaker token.Maker
 	var err error
 

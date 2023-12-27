@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/aead/chacha20poly1305 v0.0.0-20170617001512-233f39982aeb
 	github.com/go-kit/kit v0.10.0
+	github.com/go-kit/log v0.1.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.7.3

@@ -3,18 +3,19 @@ package transport
 import (
 	"context"
 	"encoding/json"
+	"gibhub.com/raytr/simple-bank/helper/b_log"
+	"gibhub.com/raytr/simple-bank/models/response"
 	"net/http"
 
 	"gibhub.com/raytr/simple-bank/endpoints"
 	"gibhub.com/raytr/simple-bank/helper/password"
 	"gibhub.com/raytr/simple-bank/models/request"
 	"gibhub.com/raytr/simple-bank/services"
-	kitlog "github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 )
 
-func AuthHttpHandler(authSvc services.AuthService, logger kitlog.Logger) *mux.Router {
+func AuthHttpHandler(authSvc services.AuthService, logger b_log.Logger) *mux.Router {
 	router := mux.NewRouter()
 	epAuth := endpoints.MakeAuthEndpoints(authSvc)
 	RegisterAuthHttpHandler(router, epAuth, logger)
@@ -22,12 +23,13 @@ func AuthHttpHandler(authSvc services.AuthService, logger kitlog.Logger) *mux.Ro
 	return router
 }
 
-func RegisterAuthHttpHandler(r *mux.Router, ep endpoints.AuthEndpoint, logger kitlog.Logger) {
+func RegisterAuthHttpHandler(r *mux.Router, ep endpoints.AuthEndpoint, logger b_log.Logger) {
 
 	//options provided by the Go kit to facilitate error control
 	options := []httptransport.ServerOption{
-		httptransport.ServerErrorLogger(logger),
-		httptransport.ServerErrorEncoder(password.EncodeErrorResponse),
+		httptransport.ServerBefore(b_log.TraceIdentifier),
+		httptransport.ServerErrorHandler(logger),
+		httptransport.ServerErrorEncoder(response.EncodeError),
 	}
 
 	r.Methods("POST").Path("/login").Handler(httptransport.NewServer(

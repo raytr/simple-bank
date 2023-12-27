@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"gibhub.com/raytr/simple-bank/helper/b_log"
 
 	"gibhub.com/raytr/simple-bank/config"
 	"gibhub.com/raytr/simple-bank/helper/password"
@@ -9,7 +10,6 @@ import (
 	"gibhub.com/raytr/simple-bank/models/entity"
 	"gibhub.com/raytr/simple-bank/models/request"
 	"gibhub.com/raytr/simple-bank/repository"
-	"github.com/go-kit/kit/log"
 	"github.com/google/uuid"
 )
 
@@ -24,13 +24,13 @@ type UserService interface {
 type userServiceImpl struct {
 	repository repository.UserRepo
 	secConfig  config.SecurityConfig
-	logger     log.Logger
+	logger     b_log.Logger
 }
 
 func NewUserService(
 	userRepo repository.UserRepo,
 	secCfg config.SecurityConfig,
-	logger log.Logger,
+	logger b_log.Logger,
 ) UserService {
 	return &userServiceImpl{userRepo, secCfg, logger}
 }
@@ -51,7 +51,7 @@ func (s *userServiceImpl) Save(ctx context.Context, input request.UserRegister) 
 
 	err = s.repository.Create(ctx, user)
 	if err != nil {
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return err
 	}
 
@@ -61,7 +61,7 @@ func (s *userServiceImpl) Save(ctx context.Context, input request.UserRegister) 
 func (s *userServiceImpl) GetById(ctx context.Context, id uuid.UUID) (*entity.User, error) {
 	user, err := s.repository.FindById(ctx, id)
 	if err != nil {
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return nil, err
 	}
 
@@ -71,7 +71,7 @@ func (s *userServiceImpl) GetById(ctx context.Context, id uuid.UUID) (*entity.Us
 func (s *userServiceImpl) GetList(ctx context.Context, filter request.ListUserRequest) ([]entity.User, error) {
 	users, err := s.repository.FindByParams(ctx, filter)
 	if err != nil {
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return nil, err
 	}
 
@@ -81,7 +81,7 @@ func (s *userServiceImpl) GetList(ctx context.Context, filter request.ListUserRe
 func (s *userServiceImpl) Update(ctx context.Context, id uuid.UUID, input request.UpdateUserBody) error {
 	_, err := s.repository.FindById(ctx, id)
 	if err != nil {
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return err
 	}
 
@@ -92,7 +92,7 @@ func (s *userServiceImpl) Update(ctx context.Context, id uuid.UUID, input reques
 
 	err = s.repository.Update(ctx, id, data)
 	if err != nil {
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return err
 	}
 
@@ -102,13 +102,13 @@ func (s *userServiceImpl) Update(ctx context.Context, id uuid.UUID, input reques
 func (s *userServiceImpl) Delete(ctx context.Context, id uuid.UUID) error {
 	_, err := s.repository.FindById(ctx, id)
 	if err != nil {
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return err
 	}
 
 	err = s.repository.Delete(ctx, id)
 	if err != nil {
-		s.logger.Log(err)
+		s.logger.Error(err)
 		return err
 	}
 

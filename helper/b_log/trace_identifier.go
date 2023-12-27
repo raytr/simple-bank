@@ -24,3 +24,11 @@ func TraceIdentifierMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(writer, request.WithContext(ctx))
 	})
 }
+
+func TraceIdentifier(ctx context.Context, request *http.Request) context.Context {
+	traceId := request.Context().Value(TraceIDContextKey)
+	if traceId == "" {
+		traceId = "req-" + uuid.NewString()
+	}
+	return context.WithValue(ctx, TraceIDContextKey, traceId)
+}

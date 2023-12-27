@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"gibhub.com/raytr/simple-bank/helper/b_log"
 	"net/http"
 	"os"
 	"strconv"
@@ -12,22 +13,19 @@ import (
 	"gibhub.com/raytr/simple-bank/helper/database"
 	"gibhub.com/raytr/simple-bank/initialization"
 	"gibhub.com/raytr/simple-bank/middleware"
-	"github.com/go-kit/kit/log"
 )
 
 func main() {
 	cfg := config.Init("config", "yml")
 
-	var logger log.Logger
-	logger = log.NewLogfmtLogger(os.Stderr)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, cfg.Server.Port, "caller", log.DefaultCaller)
+	logger := b_log.NewLogger(cfg.Server.Name)
 
 	db, err := database.InitDatabase(&cfg.DBConfig)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	_ = logger.Log("msg", fmt.Sprintf("Listening at port %s", strconv.Itoa(cfg.Server.Port)))
+	logger.Info(fmt.Sprintf("Listening at port %s", strconv.Itoa(cfg.Server.Port)))
 	mux := initialization.InitRouting(db, cfg, logger)
 	httpServer := http.Server{
 		Addr:    *flag.String("listen", ":"+strconv.Itoa(cfg.Server.Port), "Listen address."),
@@ -50,6 +48,7 @@ func readFlags() map[string]interface{} {
 			key := parts[0]
 			value := parts[1]
 			params[key] = value
+
 		}
 	}
 

@@ -2,9 +2,10 @@ package b_log
 
 import (
 	"context"
+	"os"
 	"time"
 
-	gokit_log "github.com/go-kit/kit/log"
+	gokitlog "github.com/go-kit/log"
 )
 
 const (
@@ -29,50 +30,55 @@ type LogCollection struct {
 
 type Logger interface {
 	Info(msg string)
-	Warn(msg string)
-	Error(msg string)
+	Error(err error)
 	WithContext(ctx context.Context) Logger
+	Handle(ctx context.Context, err error)
+	printf(logCollection *LogCollection)
 }
 
-type logger struct {
-	Writer  gokit_log.Logger
+type customLogger struct {
+	Writer  gokitlog.Logger
 	Context context.Context
+	Caller  string
 }
 
-func NewLogger(writer gokit_log.Logger) Logger {
-	return &logger{
-		Writer: writer,
+func NewLogger(caller string) Logger {
+	return &customLogger{
+		Writer: gokitlog.NewLogfmtLogger(os.Stderr),
+		Caller: caller,
 	}
 }
 
-func (l *logger) WithContext(ctx context.Context) Logger {
+func (l *customLogger) WithContext(ctx context.Context) Logger {
 	lg := *l
 	lg.Context = ctx
 	return &lg
 }
 
-func (l *logger) Info(msg string) {
-	l.Writer.Log(l.format(msg, InfoLevel))
+func (l *customLogger) Info(msg string) {
+	l.printf(l.format(msg, InfoLevel))
 }
 
-func (l *logger) Warn(msg string) {
-	l.Writer.Log(l.format(msg, WarnLevel))
+func (l *customLogger) Error(err error) {
+	l.printf(l.format(err.Error(), ErrorLevel))
 }
 
-func (l *logger) Error(msg string) {
-	l.Writer.Log(l.format(msg, ErrorLevel))
+// Handle - implement for ServerErrorHandler
+func (l *customLogger) Handle(ctx context.Context, err error) {
+	l.WithContext(ctx).Error(err)
 }
 
-func (l *logger) format(msg string, level string) *LogCollection {
+func (l *customLogger) format(msg string, level string) *LogCollection {
 	return &LogCollection{
+		TraceID:  l.traceId(),
 		DateTime: time.Now(),
 		Level:    level,
-		TraceID:  l.traceId(),
 		Message:  msg,
+		Caller:   l.Caller,
 	}
 }
 
-func (l *logger) traceId() string {
+func (l *customLogger) traceId() string {
 	var traceId string
 	if l.Context != nil {
 		if ctxTraceID, ok := l.Context.Value(TraceIDContextKey).(string); ok {
@@ -80,4 +86,8 @@ func (l *logger) traceId() string {
 		}
 	}
 	return traceId
+}
+
+func (l *customLogger) printf(logCollection *LogCollection) {
+	_ = l.Writer.Log("trade-id", logCollection.TraceID, "level", logCollection.Level, "caller", logCollection.Caller, "message", logCollection.Message, "time", logCollection.DateTime)
 }
