@@ -8,15 +8,13 @@ import (
 	"gibhub.com/raytr/simple-bank/models/entity"
 	"gibhub.com/raytr/simple-bank/models/request"
 	"gibhub.com/raytr/simple-bank/repository/repository_mock"
-	"github.com/go-kit/kit/log"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
 var (
-	logger log.Logger
-	pwCfg  = config.SecurityConfig{
+	pwCfg = config.SecurityConfig{
 		PasswordPepper:     "pepper",
 		PasswordSaltLength: 10,
 	}

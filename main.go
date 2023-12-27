@@ -3,16 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gibhub.com/raytr/simple-bank/helper/b_log"
-	"net/http"
-	"os"
-	"strconv"
-	"strings"
-
 	"gibhub.com/raytr/simple-bank/config"
+	"gibhub.com/raytr/simple-bank/helper/b_log"
 	"gibhub.com/raytr/simple-bank/helper/database"
 	"gibhub.com/raytr/simple-bank/initialization"
 	"gibhub.com/raytr/simple-bank/middleware"
+	"net/http"
+	"strconv"
 )
 
 func main() {
@@ -35,42 +32,4 @@ func main() {
 	if err := httpServer.ListenAndServe(); err != nil {
 		panic(err)
 	}
-}
-
-func readFlags() map[string]interface{} {
-	flags := make(map[string]interface{})
-	args := os.Args[1:]
-	params := make(map[string]string)
-
-	for _, arg := range args {
-		parts := strings.Split(arg, "=")
-		if len(parts) == 2 {
-			key := parts[0]
-			value := parts[1]
-			params[key] = value
-
-		}
-	}
-
-	// Create a map to store key-value pairs
-	dbhost := params["db_host"]
-	if dbhost != "" {
-		flags["db_host"] = dbhost
-	}
-
-	dbportStr := params["db_port"]
-	if dbportStr != "" {
-		dbport, err := strconv.Atoi(dbportStr)
-		if err != nil {
-			panic(err.Error())
-		}
-		flags["db_host"] = dbport
-	}
-
-	isTest := params["test"]
-	if isTest != "" && isTest == "true" {
-		flags["test"] = true
-	}
-
-	return flags
 }

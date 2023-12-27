@@ -7,24 +7,22 @@ import (
 	"testing"
 
 	"gibhub.com/raytr/simple-bank/config"
+	"gibhub.com/raytr/simple-bank/helper/b_log"
 	"gibhub.com/raytr/simple-bank/helper/database"
 	"gibhub.com/raytr/simple-bank/initialization"
-	"github.com/go-kit/kit/log"
 )
 
 var mux *http.ServeMux
-var logger log.Logger
 
 func TestMain(m *testing.M) {
 	cfg := config.Init("config_testing", "yml")
-
+	lg := b_log.NewLogger(cfg.Server.Name)
 	db, err := database.InitDatabase(&cfg.DBConfig)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	mux = initialization.InitRouting(db, cfg, logger)
-	// http.Handle("/", accessControl(mux))
+	mux = initialization.InitRouting(db, cfg, lg)
 
 	code := m.Run()
 
